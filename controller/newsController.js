@@ -13,16 +13,19 @@ const getNewsAsUserPreferences = async (id) => {
     error.status = 404;
     throw error;
   }
+
   const preferences = user.preferences || [];
+
   if (preferences.length === 0) {
     return [];
   }
+
   try {
     const responses = await Promise.all(
-      preferences.map((preference) =>
+      preferences.map((category) =>
         newsapi.v2.topHeadlines({
           country: "us",
-          q: preference,
+          category: category,
         }),
       ),
     );
@@ -30,7 +33,6 @@ const getNewsAsUserPreferences = async (id) => {
     return responses.flatMap((response) => response.articles || []);
   } catch (err) {
     const error = new Error(err.message || "Failed to fetch news");
-
     error.status = 500;
     throw error;
   }

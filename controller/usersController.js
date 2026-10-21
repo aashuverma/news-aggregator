@@ -1,6 +1,6 @@
 const usersModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
-const SALT_ROUND = 6;
+const SALT_ROUND = 10;
 const jwt = require("jsonwebtoken");
 
 const signUpUser = async (user) => {
@@ -13,21 +13,24 @@ const signUpUser = async (user) => {
 
   return dbUser;
 };
+
 const loginUser = async (email, password) => {
-  const user = await usersModel.findOne({ email: email });
+  const user = await usersModel.findOne({ email });
+
   if (!user) {
-    const error = new Error("User not found");
+    const error = new Error("Invalid email or password");
     error.status = 401;
     throw error;
   }
 
-  const isSamePassword = bcrypt.compareSync(password, user.password);
+  const isSamePassword = await bcrypt.compare(password, user.password);
 
   if (!isSamePassword) {
-    const error = new Error("Invalid password");
+    const error = new Error("Invalid email or password");
     error.status = 401;
     throw error;
   }
+
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "1h",
   });

@@ -7,10 +7,17 @@ const getNewsAsUserPreferences = require("../controller/newsController");
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const news = await getNewsAsUserPreferences(req.userId);
-
     return res.status(200).json({ news });
   } catch (err) {
-    return res.status(err.status || 500).json({
+    const status = err.status || 500;
+
+    if (status >= 500) {
+      return res.status(status).json({
+        error: "Internal server error",
+      });
+    }
+
+    return res.status(status).json({
       error: err.message,
     });
   }
